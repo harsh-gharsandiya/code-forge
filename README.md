@@ -90,7 +90,24 @@ VITE_API_URL=http://localhost:5000/api
 
 ## Running the Application
 
-### Start MongoDB
+### Option 1: Using Docker (Recommended)
+
+The easiest way to run the application is using Docker Compose:
+
+```bash
+docker-compose up
+```
+
+This will start:
+- MongoDB on port 27017
+- Backend server on port 5000
+- Frontend on port 5173
+
+Access the application at `http://localhost:5173`
+
+### Option 2: Manual Setup
+
+#### Start MongoDB
 
 Make sure MongoDB is running on your system:
 
@@ -105,7 +122,7 @@ sudo systemctl start mongod
 mongod
 ```
 
-### Start Backend Server
+#### Start Backend Server
 
 ```bash
 cd backend
@@ -116,7 +133,7 @@ npm run dev
 
 The backend server will start on `http://localhost:5000`
 
-### Start Frontend
+#### Start Frontend
 
 In a new terminal:
 
@@ -126,6 +143,17 @@ npm run dev
 ```
 
 The frontend will start on `http://localhost:5173`
+
+### Option 3: Quick Setup Script
+
+For Unix/Linux/Mac systems:
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+Then follow the instructions to start the servers.
 
 ## Usage
 
