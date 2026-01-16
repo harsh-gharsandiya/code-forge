@@ -4,9 +4,10 @@ const Document = require('../models/Document');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const checkDocumentPermission = require('../middleware/permission');
+const { documentLimiter } = require('../middleware/rateLimiter');
 
 // Create document
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, documentLimiter, async (req, res) => {
   try {
     const { title } = req.body;
 
@@ -25,7 +26,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Get all documents (owned + shared with user)
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, documentLimiter, async (req, res) => {
   try {
     const ownedDocuments = await Document.find({ owner: req.userId })
       .sort({ updatedAt: -1 })
@@ -59,7 +60,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Get single document
-router.get('/:id', auth, checkDocumentPermission('viewer'), async (req, res) => {
+router.get('/:id', auth, documentLimiter, checkDocumentPermission('viewer'), async (req, res) => {
   try {
     res.json({
       ...req.document.toObject(),
@@ -72,7 +73,7 @@ router.get('/:id', auth, checkDocumentPermission('viewer'), async (req, res) => 
 });
 
 // Update document content
-router.put('/:id/content', auth, checkDocumentPermission('editor'), async (req, res) => {
+router.put('/:id/content', auth, documentLimiter, checkDocumentPermission('editor'), async (req, res) => {
   try {
     const { content } = req.body;
     
@@ -87,7 +88,7 @@ router.put('/:id/content', auth, checkDocumentPermission('editor'), async (req, 
 });
 
 // Update document title (owner only)
-router.put('/:id/title', auth, checkDocumentPermission('owner'), async (req, res) => {
+router.put('/:id/title', auth, documentLimiter, checkDocumentPermission('owner'), async (req, res) => {
   try {
     const { title } = req.body;
 
@@ -106,7 +107,7 @@ router.put('/:id/title', auth, checkDocumentPermission('owner'), async (req, res
 });
 
 // Share document
-router.post('/:id/share', auth, checkDocumentPermission('owner'), async (req, res) => {
+router.post('/:id/share', auth, documentLimiter, checkDocumentPermission('owner'), async (req, res) => {
   try {
     const { email, permission } = req.body;
 
@@ -138,7 +139,7 @@ router.post('/:id/share', auth, checkDocumentPermission('owner'), async (req, re
 });
 
 // Remove collaborator
-router.delete('/:id/share/:email', auth, checkDocumentPermission('owner'), async (req, res) => {
+router.delete('/:id/share/:email', auth, documentLimiter, checkDocumentPermission('owner'), async (req, res) => {
   try {
     const { email } = req.params;
     
@@ -155,7 +156,7 @@ router.delete('/:id/share/:email', auth, checkDocumentPermission('owner'), async
 });
 
 // Delete document (owner only)
-router.delete('/:id', auth, checkDocumentPermission('owner'), async (req, res) => {
+router.delete('/:id', auth, documentLimiter, checkDocumentPermission('owner'), async (req, res) => {
   try {
     await Document.findByIdAndDelete(req.params.id);
     res.json({ message: 'Document deleted successfully' });

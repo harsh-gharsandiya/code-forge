@@ -6,6 +6,7 @@ const cors = require('cors');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth');
 const documentRoutes = require('./routes/documents');
+const { apiLimiter } = require('./middleware/rateLimiter');
 const Document = require('./models/Document');
 const jwt = require('jsonwebtoken');
 
@@ -21,6 +22,9 @@ const io = socketIo(server, {
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Apply rate limiting to all API routes
+app.use('/api/', apiLimiter);
 
 // Connect to database
 connectDB();
