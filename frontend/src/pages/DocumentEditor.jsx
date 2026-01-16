@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { documentService } from '../services/api';
 import ShareModal from '../components/ShareModal';
 import './DocumentEditor.css';
@@ -9,7 +9,7 @@ import './DocumentEditor.css';
 const DocumentEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [document, setDocument] = useState(null);
   const [content, setContent] = useState('');
   const [permission, setPermission] = useState('');
@@ -22,19 +22,7 @@ const DocumentEditor = () => {
   const socketRef = useRef(null);
   const editorRef = useRef(null);
 
-  useEffect(() => {
-    loadDocument();
-    setupSocket();
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.emit('leave-document', id);
-        socketRef.current.disconnect();
-      }
-    };
-  }, [id]);
-
-  const loadDocument = async () => {
+  const loadDocument = useCallback(async () => {
     try {
       setLoading(true);
       const data = await documentService.getById(id);
@@ -42,15 +30,15 @@ const DocumentEditor = () => {
       setContent(data.content);
       setPermission(data.permission);
       setTitle(data.title);
-    } catch (err) {
+    } catch {
       setError('Failed to load document');
       setTimeout(() => navigate('/documents'), 2000);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
 
-  const setupSocket = () => {
+  const setupSocket = useCallback(() => {
     const token = localStorage.getItem('token');
     const socket = io(import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000', {
       auth: { token }
@@ -82,7 +70,19 @@ const DocumentEditor = () => {
     });
 
     socketRef.current = socket;
-  };
+  }, [id]);
+
+  useEffect(() => {
+    loadDocument();
+    setupSocket();
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.emit('leave-document', id);
+        socketRef.current.disconnect();
+      }
+    };
+  }, [id, loadDocument, setupSocket]);
 
   const handleContentChange = (e) => {
     const newContent = e.target.value;
@@ -104,7 +104,7 @@ const DocumentEditor = () => {
       await documentService.updateTitle(id, title);
       setIsEditingTitle(false);
       setDocument({ ...document, title });
-    } catch (err) {
+    } catch {
       setError('Failed to update title');
     }
   };

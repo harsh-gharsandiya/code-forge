@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { documentService } from '../services/api';
 import './DocumentList.css';
 
@@ -22,7 +22,7 @@ const DocumentList = () => {
       setLoading(true);
       const data = await documentService.getAll();
       setDocuments(data);
-    } catch (err) {
+    } catch {
       setError('Failed to load documents');
     } finally {
       setLoading(false);
@@ -35,7 +35,7 @@ const DocumentList = () => {
       setShowNewDocModal(false);
       setNewDocTitle('');
       navigate(`/documents/${doc._id}`);
-    } catch (err) {
+    } catch {
       setError('Failed to create document');
     }
   };
@@ -46,7 +46,7 @@ const DocumentList = () => {
       try {
         await documentService.delete(id);
         loadDocuments();
-      } catch (err) {
+      } catch {
         setError('Failed to delete document');
       }
     }

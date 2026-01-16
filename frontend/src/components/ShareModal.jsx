@@ -17,8 +17,8 @@ const ShareModal = ({ document, onClose, onUpdate }) => {
       await documentService.share(document._id, email, permission);
       setEmail('');
       onUpdate();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to share document');
+    } catch (error) {
+      setError(error.response?.data?.error || 'Failed to share document');
     } finally {
       setLoading(false);
     }
@@ -28,7 +28,7 @@ const ShareModal = ({ document, onClose, onUpdate }) => {
     try {
       await documentService.removeCollaborator(document._id, collaboratorEmail);
       onUpdate();
-    } catch (err) {
+    } catch {
       setError('Failed to remove collaborator');
     }
   };
